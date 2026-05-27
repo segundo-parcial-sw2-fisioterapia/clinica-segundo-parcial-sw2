@@ -1,0 +1,643 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+enum CategoriaEnfermedad {
+  CADERA_DESALINEADA
+  DISCAPACIDAD_MOTORA
+  ESPALDA_DESVIADA
+  LESION_BRAZO
+  LESION_PIE
+  LESION_PIERNA
+  OBESIDAD
+  OTRO
+  PARALISIS_FACIAL
+  POST_ACV
+}
+
+enum CategoriaSemaforo {
+  AMARILLO
+  ROJO
+  VERDE
+}
+
+enum CategoriaTrabajo {
+  EXTREMIDAD_INFERIOR
+  EXTREMIDAD_SUPERIOR
+  SUPERIOR
+  TORAX_CINTURA
+}
+
+type Citas {
+  duracion_minutos: Int
+  empleado_id: Int!
+  estado: EstadoCita!
+  fecha_creacion: DateTime!
+  fecha_hora: DateTime!
+  id: Int!
+  observaciones: String
+  origen: OrigenCita!
+  paciente: Pacientes!
+  tipo: TipoCita!
+}
+
+input CreateCitaInput {
+  duracion_minutos: Int
+  empleadoId: Int!
+  estado: EstadoCita
+  fecha_hora: DateTime!
+  observaciones: String
+  origen: OrigenCita
+  pacienteId: Int!
+  tipo: TipoCita!
+}
+
+input CreateEjercicioInput {
+  categoria_trabajo: CategoriaTrabajo!
+  descripcion: String
+  duracion_segundos: Int
+  nivel_dificultad: NivelDificultadEjercicio!
+  nombre: String!
+  repeticiones_sugeridas: Int
+  url_video_referencia: String
+}
+
+input CreateEvaluacionesInnicialeInput {
+  categoria_enfermedad: CategoriaEnfermedad!
+  categoria_semaforo: CategoriaSemaforo!
+  categoria_trabajo: CategoriaTrabajo!
+  descripcion_enfermedad: String
+  empleadoId: Int!
+  es_vigente: Boolean
+  fecha_evaluacion: DateTime!
+  frecuencia_sesion: FrecuenciaSesion!
+  justificacion_semaforo: String
+  observaciones: String
+  pacienteId: Int!
+}
+
+input CreatePacienteInput {
+  direccion: String
+  estado: EstadoPaciente
+  fecha_nacimiento: String
+  personaId: Int!
+  sexo: SexoPaciente
+}
+
+input CreatePersonaInput {
+  apellido: String!
+  ci: String!
+  nombre: String!
+  telefono: String
+}
+
+input CreatePlanesEjercicioInput {
+  activo: Boolean
+  ejercicioId: Int!
+  frecuencia: FrecuenciaPlanEjercicio!
+  orden: Int
+  planTratamientoId: Int!
+  repeticiones: Int
+  series: Int
+}
+
+input CreatePlanesTratamientoInput {
+  empleadoId: Int!
+  estado: EstadoPlanTratamiento
+  evaluacionInicialId: Int
+  fecha_fin_estimada: String
+  fecha_inicio: String!
+  objetivo_terapeutico: String
+  observaciones: String
+  pacienteId: Int!
+}
+
+input CreateSesioneInput {
+  citaId: Int
+  empleadoId: Int!
+  estado_sesion: EstadoSesion
+  fecha_hora_fin: DateTime
+  fecha_hora_inicio: DateTime!
+  hash_blockchain: String
+  nivel_dolor_post: Int
+  nivel_dolor_reportado: Int
+  observaciones_clinicas: String
+  pacienteId: Int!
+  url_documento_firmado: String
+}
+
+input CreateSesionesDocmiciliariaInput {
+  analizado_por_ia: Boolean
+  correcciones_emitidas: String
+  fecha_hora: DateTime!
+  pacienteId: Int!
+  planEjercicioId: Int!
+  puntuacion: Int
+  repeticiones_completadas: Int
+  url_video: String
+  xp_ganado: Int
+}
+
+input CreateUsuarioInput {
+  contrasena: String!
+  correo: String!
+  estado: EstadoUsuario
+  personaId: Int!
+  roles: [RolUsuario!]!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type Ejercicios {
+  categoria_trabajo: CategoriaTrabajo!
+  descripcion: String
+  duracion_segundos: Int
+  id: Int!
+  nivel_dificultad: NivelDificultadEjercicio!
+  nombre: String!
+  repeticiones_sugeridas: Int
+  url_video_referencia: String
+}
+
+enum EstadoCita {
+  ASISTIDA
+  CANCELADA
+  CONFIRMADA
+  PROGRAMADA
+  REPROGRAMADA
+}
+
+enum EstadoPaciente {
+  ACTIVO
+  ALTA_MEDICA
+  INACTIVO
+}
+
+enum EstadoPlanTratamiento {
+  ACTIVO
+  COMPLETADO
+  SUSPENDIDO
+}
+
+enum EstadoSesion {
+  ABIERTA
+  CERRADA
+  FIRMADA
+}
+
+enum EstadoUsuario {
+  ACTIVO
+  INACTIVO
+  SUSPENDIDO
+}
+
+type EvaluacionesIniciales {
+  categoria_enfermedad: CategoriaEnfermedad!
+  categoria_semaforo: CategoriaSemaforo!
+  categoria_trabajo: CategoriaTrabajo!
+  descripcion_enfermedad: String
+  empleado_id: Int!
+  es_vigente: Boolean!
+  fecha_evaluacion: DateTime!
+  frecuencia_sesion: FrecuenciaSesion!
+  id: Int!
+  justificacion_semaforo: String
+  observaciones: String
+  paciente: Pacientes!
+  tiempo_sesion_minutos: Int!
+}
+
+enum FrecuenciaPlanEjercicio {
+  DIARIA
+  INTERDIARIA
+  SEMANAL
+}
+
+enum FrecuenciaSesion {
+  DIARIA
+  MENSUAL
+  SEMANAL
+}
+
+type Mutation {
+  """Registra el alta médica de un paciente clínico"""
+  altaMedicaPaciente(id: Int!): Pacientes!
+
+  """Cancela una cita cambiando su estado a CANCELADA"""
+  cancelarCita(id: Int!): Citas!
+
+  """Cierra una sesión registrando el hash de firma digital"""
+  cerrarYFirmarSesion(hashBlockchain: String!, id: Int!, urlDocumento: String!): Sesiones!
+
+  """Confirma una cita cambiando su estado a CONFIRMADA"""
+  confirmarCita(id: Int!): Citas!
+
+  """Agenda una cita presencial o desde flujo automatizado"""
+  crearCitas(datos: CreateCitaInput!): Citas!
+
+  """Agrega un nuevo ejercicio al catálogo terapéutico"""
+  crearEjercicios(datos: CreateEjercicioInput!): Ejercicios!
+
+  """Registra la evaluación clínica inicial de un paciente"""
+  crearEvaluacionesIniciales(datos: CreateEvaluacionesInnicialeInput!): EvaluacionesIniciales!
+
+  """Registra un nuevo paciente vinculado a una persona"""
+  crearPacientes(datos: CreatePacienteInput!): Pacientes!
+
+  """Registra una nueva persona en el sistema"""
+  crearPersonas(datos: CreatePersonaInput!): Personas!
+
+  """
+  Asigna un ejercicio con parámetros personalizados a un plan de tratamiento
+  """
+  crearPlanesEjercicios(datos: CreatePlanesEjercicioInput!): PlanesEjercicios!
+
+  """Registra un nuevo plan de tratamiento para un paciente"""
+  crearPlanesTratamientos(datos: CreatePlanesTratamientoInput!): PlanesTratamientos!
+
+  """Abre una sesión de fisioterapia vinculada a una cita"""
+  crearSesiones(datos: CreateSesioneInput!): Sesiones!
+
+  """Registra una sesión domiciliaria completada por el paciente"""
+  crearSesionesDomiciliarias(datos: CreateSesionesDocmiciliariaInput!): SesionesDomiciliarias!
+
+  """Crea un nuevo usuario del sistema con contraseña hasheada"""
+  crearUsuarios(datos: CreateUsuarioInput!): Usuarios!
+
+  """Actualiza los datos de una cita existente"""
+  editarCita(datos: UpdateCitaInput!): Citas!
+
+  """Actualiza los datos de un ejercicio del catálogo"""
+  editarEjercicio(datos: UpdateEjercicioInput!): Ejercicios!
+
+  """Actualiza los campos de una evaluación clínica existente"""
+  editarEvaluacionInicial(datos: UpdateEvaluacionesInnicialeInput!): EvaluacionesIniciales!
+
+  """Actualiza los datos clínicos de un paciente"""
+  editarPaciente(datos: UpdatePacienteInput!): Pacientes!
+
+  """Actualiza los datos de una persona existente"""
+  editarPersona(datos: UpdatePersonaInput!): Personas!
+
+  """Actualiza los parámetros personalizados de un ejercicio en el plan"""
+  editarPlanEjercicio(datos: UpdatePlanesEjercicioInput!): PlanesEjercicios!
+
+  """Actualiza los campos de un plan de tratamiento existente"""
+  editarPlanTratamiento(datos: UpdatePlanesTratamientoInput!): PlanesTratamientos!
+
+  """Actualiza los datos (observaciones, dolor) de una sesión"""
+  editarSesion(datos: UpdateSesioneInput!): Sesiones!
+
+  """Actualiza los datos de una sesión domiciliaria"""
+  editarSesionDomiciliaria(datos: UpdateSesionesDocmiciliariaInput!): SesionesDomiciliarias!
+
+  """Actualiza los datos de un usuario (roles, estado, contraseña)"""
+  editarUsuario(datos: UpdateUsuarioInput!): Usuarios!
+
+  """Elimina una cita del sistema"""
+  eliminarCita(id: Int!): Citas!
+
+  """Elimina un ejercicio del catálogo permanentemente"""
+  eliminarEjercicio(id: Int!): Ejercicios!
+
+  """Elimina una evaluación clínica del sistema"""
+  eliminarEvaluacionInicial(id: Int!): EvaluacionesIniciales!
+
+  """Elimina un paciente de la clínica permanentemente"""
+  eliminarPaciente(id: Int!): Pacientes!
+
+  """Elimina una persona del sistema"""
+  eliminarPersona(id: Int!): Personas!
+
+  """Remueve un ejercicio de un plan de tratamiento"""
+  eliminarPlanEjercicio(id: Int!): PlanesEjercicios!
+
+  """Elimina un plan de tratamiento del sistema"""
+  eliminarPlanTratamiento(id: Int!): PlanesTratamientos!
+
+  """Elimina una sesión del sistema"""
+  eliminarSesion(id: Int!): Sesiones!
+
+  """Elimina una sesión domiciliaria del sistema"""
+  eliminarSesionDomiciliaria(id: Int!): SesionesDomiciliarias!
+
+  """Elimina definitivamente un usuario del sistema"""
+  eliminarUsuario(id: Int!): Usuarios!
+
+  """Cambia el estado del usuario a INACTIVO sin eliminarlo"""
+  inactivarUsuario(id: Int!): Usuarios!
+}
+
+enum NivelDificultadEjercicio {
+  ALTO
+  BAJO
+  MEDIO
+}
+
+enum OrigenCita {
+  RECEPCION
+  SISTEMA
+  WHATSAPP
+}
+
+type Pacientes {
+  direccion: String
+  estado: EstadoPaciente!
+  fecha_nacimiento: String
+  fecha_registro: DateTime!
+  id: Int!
+  persona: Personas
+  sexo: SexoPaciente
+}
+
+type Personas {
+  apellido: String!
+  ci: String!
+  id: Int!
+  nombre: String!
+  telefono: String
+}
+
+type PlanesEjercicios {
+  activo: Boolean!
+  ejercicio: Ejercicios!
+  frecuencia: FrecuenciaPlanEjercicio!
+  id: Int!
+  orden: Int
+  plan_tratamiento: PlanesTratamientos!
+  repeticiones: Int
+  series: Int
+}
+
+type PlanesTratamientos {
+  empleado_id: Int!
+  estado: EstadoPlanTratamiento!
+  evaluacion_inicial: EvaluacionesIniciales
+  fecha_fin_estimada: String
+  fecha_inicio: String!
+  id: Int!
+  objetivo_terapeutico: String
+  observaciones: String
+  paciente: Pacientes!
+}
+
+type Query {
+  """Busca pacientes por nombre, CI o teléfono"""
+  buscarPacientes(termino: String!): [Pacientes!]!
+
+  """Busca personas por nombre, apellido o CI"""
+  buscarPersonas(termino: String!): [Personas!]!
+
+  """Retorna todas las citas ordenadas por fecha"""
+  listarCitas: [Citas!]!
+
+  """Retorna la agenda de un fisioterapeuta en una fecha"""
+  listarCitasPorEmpleadoYFecha(empleadoId: Int!, fecha: String!): [Citas!]!
+
+  """Retorna las citas de un paciente"""
+  listarCitasPorPaciente(pacienteId: Int!): [Citas!]!
+
+  """Retorna citas próximas para envío de recordatorios"""
+  listarCitasProximas(horasAntelacion: Int! = 24): [Citas!]!
+
+  """Retorna el catálogo completo de ejercicios"""
+  listarEjercicios: [Ejercicios!]!
+
+  """Retorna los ejercicios asignados a un plan específico"""
+  listarEjerciciosDePlan(planTratamientoId: Int!): [PlanesEjercicios!]!
+
+  """Filtra ejercicios por categoría de zona corporal"""
+  listarEjerciciosPorCategoria(categoria: CategoriaTrabajo!): [Ejercicios!]!
+
+  """Retorna todas las evaluaciones iniciales registradas"""
+  listarEvaluacionesIniciales: [EvaluacionesIniciales!]!
+
+  """Retorna el historial de evaluaciones de un paciente"""
+  listarEvaluacionesPorPaciente(pacienteId: Int!): [EvaluacionesIniciales!]!
+
+  """Retorna todos los pacientes registrados"""
+  listarPacientes: [Pacientes!]!
+
+  """Retorna todas las personas registradas"""
+  listarPersonas: [Personas!]!
+
+  """Retorna todos los ejercicios asignados a planes"""
+  listarPlanesEjercicios: [PlanesEjercicios!]!
+
+  """Retorna los planes de tratamiento de un paciente"""
+  listarPlanesPorPaciente(pacienteId: Int!): [PlanesTratamientos!]!
+
+  """Retorna todos los planes de tratamiento"""
+  listarPlanesTratamientos: [PlanesTratamientos!]!
+
+  """Retorna todas las sesiones en el sistema"""
+  listarSesiones: [Sesiones!]!
+
+  """Retorna todas las sesiones domiciliarias registradas"""
+  listarSesionesDomiciliarias: [SesionesDomiciliarias!]!
+
+  """Retorna el historial de sesiones domiciliarias de un paciente"""
+  listarSesionesDomiciliariasPorPaciente(pacienteId: Int!): [SesionesDomiciliarias!]!
+
+  """Retorna el historial de sesiones de un paciente"""
+  listarSesionesPorPaciente(pacienteId: Int!): [Sesiones!]!
+
+  """Retorna todos los usuarios del sistema"""
+  listarUsuarios: [Usuarios!]!
+
+  """Busca una cita por su ID"""
+  verCita(id: Int!): Citas!
+
+  """Busca un ejercicio por su ID"""
+  verEjercicio(id: Int!): Ejercicios!
+
+  """Busca una evaluación inicial por su ID"""
+  verEvaluacionInicial(id: Int!): EvaluacionesIniciales!
+
+  """Busca un paciente por su ID"""
+  verPaciente(id: Int!): Pacientes!
+
+  """Busca una persona por su ID"""
+  verPersona(id: Int!): Personas!
+
+  """Busca los parámetros de un ejercicio en un plan por su ID"""
+  verPlanEjercicio(id: Int!): PlanesEjercicios!
+
+  """Busca un plan de tratamiento por su ID"""
+  verPlanTratamiento(id: Int!): PlanesTratamientos!
+
+  """Busca una sesión por su ID"""
+  verSesion(id: Int!): Sesiones!
+
+  """Busca una sesión domiciliaria por su ID"""
+  verSesionDomiciliaria(id: Int!): SesionesDomiciliarias!
+
+  """Busca un usuario por su ID"""
+  verUsuario(id: Int!): Usuarios!
+}
+
+"""Roles de acceso del sistema"""
+enum RolUsuario {
+  ADMINISTRADOR
+  CONTADOR
+  DIRECTOR
+  FISIOTERAPEUTA
+  PACIENTE
+  RECEPCIONISTA
+}
+
+type Sesiones {
+  cita: Citas
+  empleado_id: Int!
+  estado_sesion: EstadoSesion!
+  fecha_creacion: DateTime!
+  fecha_hora_fin: DateTime
+  fecha_hora_inicio: DateTime!
+  hash_blockchain: String
+  id: Int!
+  nivel_dolor_post: Int
+  nivel_dolor_reportado: Int
+  observaciones_clinicas: String
+  paciente: Pacientes!
+  url_documento_firmado: String
+}
+
+type SesionesDomiciliarias {
+  analizado_por_ia: Boolean!
+  correcciones_emitidas: String
+  fecha_creacion: DateTime!
+  fecha_hora: DateTime!
+  id: Int!
+  paciente: Pacientes!
+  plan_ejercicio: PlanesEjercicios!
+  puntuacion: Int
+  repeticiones_completadas: Int
+  url_video: String
+  xp_ganado: Int
+}
+
+enum SexoPaciente {
+  FEMENINO
+  MASCULINO
+  OTRO
+}
+
+enum TipoCita {
+  CONTROL
+  PRIMERA_VEZ
+  SEGUIMIENTO
+}
+
+input UpdateCitaInput {
+  duracion_minutos: Int
+  estado: EstadoCita
+  fecha_hora: DateTime
+  id: Int!
+  observaciones: String
+  origen: OrigenCita
+  tipo: TipoCita
+}
+
+input UpdateEjercicioInput {
+  categoria_trabajo: CategoriaTrabajo
+  descripcion: String
+  duracion_segundos: Int
+  id: Int!
+  nivel_dificultad: NivelDificultadEjercicio
+  nombre: String
+  repeticiones_sugeridas: Int
+  url_video_referencia: String
+}
+
+input UpdateEvaluacionesInnicialeInput {
+  categoria_enfermedad: CategoriaEnfermedad
+  categoria_semaforo: CategoriaSemaforo
+  categoria_trabajo: CategoriaTrabajo
+  descripcion_enfermedad: String
+  es_vigente: Boolean
+  fecha_evaluacion: DateTime
+  frecuencia_sesion: FrecuenciaSesion
+  id: Int!
+  justificacion_semaforo: String
+  observaciones: String
+}
+
+input UpdatePacienteInput {
+  direccion: String
+  estado: EstadoPaciente
+  fecha_nacimiento: String
+  id: Int!
+  sexo: SexoPaciente
+}
+
+input UpdatePersonaInput {
+  apellido: String
+  ci: String
+  id: Int!
+  nombre: String
+  telefono: String
+}
+
+input UpdatePlanesEjercicioInput {
+  activo: Boolean
+  frecuencia: FrecuenciaPlanEjercicio
+  id: Int!
+  orden: Int
+  repeticiones: Int
+  series: Int
+}
+
+input UpdatePlanesTratamientoInput {
+  estado: EstadoPlanTratamiento
+  evaluacionInicialId: Int
+  fecha_fin_estimada: String
+  fecha_inicio: String
+  id: Int!
+  objetivo_terapeutico: String
+  observaciones: String
+}
+
+input UpdateSesioneInput {
+  citaId: Int
+  estado_sesion: EstadoSesion
+  fecha_hora_fin: DateTime
+  fecha_hora_inicio: DateTime
+  hash_blockchain: String
+  id: Int!
+  nivel_dolor_post: Int
+  nivel_dolor_reportado: Int
+  observaciones_clinicas: String
+  url_documento_firmado: String
+}
+
+input UpdateSesionesDocmiciliariaInput {
+  analizado_por_ia: Boolean
+  correcciones_emitidas: String
+  fecha_hora: DateTime
+  id: Int!
+  puntuacion: Int
+  repeticiones_completadas: Int
+  url_video: String
+  xp_ganado: Int
+}
+
+input UpdateUsuarioInput {
+  contrasena: String
+  correo: String
+  estado: EstadoUsuario
+  id: Int!
+  roles: [RolUsuario!]
+}
+
+type Usuarios {
+  correo: String!
+  estado: EstadoUsuario!
+  fecha_creacion: DateTime!
+  id: Int!
+  persona: Personas
+  roles: [RolUsuario!]!
+  ultimo_acceso: DateTime
+}
