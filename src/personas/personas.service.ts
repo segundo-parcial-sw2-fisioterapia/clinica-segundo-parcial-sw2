@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Personas } from './entities/persona.entity';
@@ -19,6 +19,16 @@ export class PersonasService {
    * @returns La persona creada.
    */
   async crearPersonas(datos: CreatePersonaInput): Promise<Personas> {
+    // Validar unicidad del CI
+    const personaExistente = await this.personasRepository.findOne({
+      where: { ci: datos.ci },
+    });
+    if (personaExistente) {
+      throw new ConflictException(
+        `Ya existe una persona registrada con la Cédula de Identidad (CI) "${datos.ci}".`,
+      );
+    }
+
     const persona = this.personasRepository.create(datos);
     return this.personasRepository.save(persona);
   }
@@ -69,6 +79,18 @@ export class PersonasService {
   async editarPersona(datos: UpdatePersonaInput): Promise<Personas> {
     const { id, ...campos } = datos;
     await this.verPersona(id);
+
+    if (campos.ci) {
+      const personaConMismoCi = await this.personasRepository.findOne({
+        where: { ci: campos.ci },
+      });
+      if (personaConMismoCi && personaConMismoCi.id !== id) {
+        throw new ConflictException(
+          `No se puede actualizar. Ya existe otro registro con la Cédula de Identidad (CI) "${campos.ci}".`,
+        );
+      }
+    }
+
     await this.personasRepository.update(id, campos);
     return this.verPersona(id);
   }

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Pacientes } from './entities/paciente.entity';
@@ -21,6 +21,16 @@ export class PacientesService {
    * @returns El paciente creado con su persona.
    */
   async crearPacientes(datos: CreatePacienteInput): Promise<Pacientes> {
+    // Validar si la persona ya tiene un perfil de paciente
+    const pacienteExistente = await this.pacientesRepository.findOne({
+      where: { persona: { id: datos.personaId } },
+    });
+    if (pacienteExistente) {
+      throw new ConflictException(
+        `Esta persona (ID: ${datos.personaId}) ya tiene un perfil de paciente registrado.`,
+      );
+    }
+
     const paciente = this.pacientesRepository.create({
       fecha_nacimiento: datos.fecha_nacimiento,
       direccion: datos.direccion,
@@ -28,7 +38,8 @@ export class PacientesService {
       estado: datos.estado ?? EstadoPaciente.ACTIVO,
       persona: { id: datos.personaId } as Personas,
     });
-    return this.pacientesRepository.save(paciente);
+    const guardado = await this.pacientesRepository.save(paciente);
+    return this.verPaciente(guardado.id);
   }
 
   /**

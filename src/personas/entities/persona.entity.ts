@@ -24,4 +24,9 @@ export class Personas {
   @Field({ nullable: true })
   @Column({ type: 'varchar', length: 20, nullable: true })
   telefono?: string;
+
+  /** Correo electrónico de contacto único */
+  @Field({ nullable: true })
+  @Column({ type: 'varchar', length: 150, nullable: true })
+  email?: string;
 }

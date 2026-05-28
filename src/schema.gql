@@ -87,6 +87,7 @@ input CreatePacienteInput {
 input CreatePersonaInput {
   apellido: String!
   ci: String!
+  email: String
   nombre: String!
   telefono: String
 }
@@ -356,6 +357,7 @@ type Pacientes {
 type Personas {
   apellido: String!
   ci: String!
+  email: String
   id: Int!
   nombre: String!
   telefono: String
@@ -576,6 +578,7 @@ input UpdatePacienteInput {
 input UpdatePersonaInput {
   apellido: String
   ci: String
+  email: String
   id: Int!
   nombre: String
   telefono: String
