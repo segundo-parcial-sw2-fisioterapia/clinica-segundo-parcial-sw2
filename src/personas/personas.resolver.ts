@@ -27,6 +27,13 @@ export class PersonasResolver {
     return this.personasService.verPersona(id);
   }
 
+  @Query(() => [Personas], { name: 'personasPorIds', description: 'Busca múltiples personas por sus IDs en lote' })
+  personasPorIds(
+    @Args('ids', { type: () => [Int] }) ids: number[],
+  ): Promise<Personas[]> {
+    return this.personasService.buscarPorIds(ids);
+  }
+
   @Query(() => [Personas], { name: 'buscarPersonas', description: 'Busca personas por nombre, apellido o CI' })
   buscarPersonas(
     @Args('termino') termino: string,

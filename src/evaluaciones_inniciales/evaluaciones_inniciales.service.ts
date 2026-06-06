@@ -14,16 +14,20 @@ const TIEMPO_POR_SEMAFORO: Record<CategoriaSemaforo, number> = {
   [CategoriaSemaforo.VERDE]: 45,
 };
 
+const ROLES_ACCESO_TOTAL = ['administrador', 'director', 'recepcionista'];
+
 @Injectable()
 export class EvaluacionesInnicialesService {
   constructor(
     @InjectRepository(EvaluacionesIniciales)
     private readonly evaluacionesRepository: Repository<EvaluacionesIniciales>,
+    @InjectRepository(Pacientes)
+    private readonly pacientesRepository: Repository<Pacientes>,
   ) {}
 
   /**
-   * Registra la evaluación inicial del paciente y calcula
-   * el tiempo de sesión según la categoría semáforo.
+   * Registra la evaluación inicial del paciente y calcula el tiempo de sesión
+   * según la categoría semáforo.
    *
    * @param datos - Datos de la evaluación inicial.
    * @returns La evaluación inicial creada con el tiempo calculado.
@@ -31,52 +35,138 @@ export class EvaluacionesInnicialesService {
   async crearEvaluacionesIniciales(
     datos: CreateEvaluacionesInnicialeInput,
   ): Promise<EvaluacionesIniciales> {
-    const tiempo_sesion_minutos = TIEMPO_POR_SEMAFORO[datos.categoria_semaforo];
-
-    // Marca evaluaciones previas como no vigentes
-    await this.evaluacionesRepository.update(
-      { paciente: { id: datos.pacienteId }, es_vigente: true },
-      { es_vigente: false },
-    );
+    const tiempo_sesion_minutos = datos.categoria_semaforo
+      ? TIEMPO_POR_SEMAFORO[datos.categoria_semaforo]
+      : undefined;
 
     const evaluacion = this.evaluacionesRepository.create({
       paciente: { id: datos.pacienteId } as Pacientes,
       empleado_id: datos.empleadoId,
       fecha_evaluacion: datos.fecha_evaluacion,
       categoria_semaforo: datos.categoria_semaforo,
+      nivel: datos.nivel,
       justificacion_semaforo: datos.justificacion_semaforo,
       categoria_trabajo: datos.categoria_trabajo,
       categoria_enfermedad: datos.categoria_enfermedad,
       descripcion_enfermedad: datos.descripcion_enfermedad,
       tiempo_sesion_minutos,
-      frecuencia_sesion: datos.frecuencia_sesion,
       observaciones: datos.observaciones,
-      es_vigente: datos.es_vigente ?? true,
     });
     return this.evaluacionesRepository.save(evaluacion);
   }
 
-  /**
-   * Retorna todas las evaluaciones iniciales del sistema.
-   *
-   * @returns Lista de evaluaciones.
-   */
-  async listarEvaluacionesIniciales(): Promise<EvaluacionesIniciales[]> {
-    return this.evaluacionesRepository.find();
+  private async obtenerEmpleadoIdPorPersonaId(personaId: number): Promise<number | null> {
+    const url = process.env.GESTION_ADMINISTRATIVA_URL || 'http://localhost:3001/graphql';
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: `
+            query($termino: String!) {
+              buscarEmpleados(termino: $termino) {
+                id
+                personaId
+              }
+            }
+          `,
+          variables: { termino: '' },
+        }),
+      });
+      const result = (await response.json()) as any;
+      if (result?.errors) {
+        console.error('GraphQL errors from administratiba:', result.errors);
+        return null;
+      }
+      const empleados = result?.data?.buscarEmpleados || [];
+      const emp = empleados.find((e: any) => Number(e.personaId) === personaId);
+      return emp ? Number(emp.id) : null;
+    } catch (error) {
+      console.error('Error fetching employee ID from administratiba:', error);
+      return null;
+    }
   }
 
   /**
-   * Retorna las evaluaciones iniciales de un paciente específico.
+   * Retorna evaluaciones según el rol del solicitante:
+   * - administrador / director / recepcionista → todas
+   * - fisioterapeuta → solo las que tiene asignadas (empleado_id obtenido de gestion-adm)
+   * - paciente → solo las de su propio perfil (vía persona_id del JWT)
    *
-   * @param pacienteId - ID del paciente.
-   * @returns Lista de evaluaciones del paciente.
+   * @param usuarioId - sub del JWT.
+   * @param roles - Array de roles del JWT.
+   * @param personaId - persona.id del JWT.
+   */
+  async listarEvaluacionesIniciales(
+    usuarioId: number,
+    roles: string[],
+    personaId: number | null,
+  ): Promise<EvaluacionesIniciales[]> {
+    if (roles.some(r => ROLES_ACCESO_TOTAL.includes(r))) {
+      return this.evaluacionesRepository.find();
+    }
+
+    if (roles.includes('fisioterapeuta') && personaId) {
+      const empleadoId = await this.obtenerEmpleadoIdPorPersonaId(personaId);
+      if (empleadoId === null) return [];
+      return this.evaluacionesRepository.find({
+        where: { empleado_id: empleadoId },
+      });
+    }
+
+    if (roles.includes('paciente') && personaId) {
+      const paciente = await this.pacientesRepository.findOne({
+        where: { persona: { id: personaId } },
+      });
+      if (!paciente) return [];
+      return this.evaluacionesRepository.find({
+        where: { paciente: { id: paciente.id } },
+      });
+    }
+
+    return [];
+  }
+
+  /**
+   * Retorna evaluaciones de un paciente específico con visibilidad restringida:
+   * - administrador / director / recepcionista → todas
+   * - fisioterapeuta → solo si el paciente tiene evaluaciones asignadas a él
+   * - paciente → solo si el paciente solicitado le pertenece (persona_id)
    */
   async listarEvaluacionesPorPaciente(
     pacienteId: number,
+    usuarioId: number,
+    roles: string[],
+    personaId: number | null,
   ): Promise<EvaluacionesIniciales[]> {
-    return this.evaluacionesRepository.find({
-      where: { paciente: { id: pacienteId } },
-    });
+    if (roles.some(r => ROLES_ACCESO_TOTAL.includes(r))) {
+      return this.evaluacionesRepository.find({
+        where: { paciente: { id: pacienteId } },
+      });
+    }
+
+    if (roles.includes('fisioterapeuta') && personaId) {
+      const empleadoId = await this.obtenerEmpleadoIdPorPersonaId(personaId);
+      if (empleadoId === null) return [];
+      return this.evaluacionesRepository.find({
+        where: {
+          paciente: { id: pacienteId },
+          empleado_id: empleadoId,
+        },
+      });
+    }
+
+    if (roles.includes('paciente') && personaId) {
+      const paciente = await this.pacientesRepository.findOne({
+        where: { persona: { id: personaId } },
+      });
+      if (!paciente || paciente.id !== pacienteId) return [];
+      return this.evaluacionesRepository.find({
+        where: { paciente: { id: pacienteId } },
+      });
+    }
+
+    return [];
   }
 
   /**

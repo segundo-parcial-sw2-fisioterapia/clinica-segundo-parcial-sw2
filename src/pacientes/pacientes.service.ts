@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { Pacientes } from './entities/paciente.entity';
 import { Personas } from '../personas/entities/persona.entity';
 import { CreatePacienteInput } from './dto/create-paciente.input';
@@ -62,6 +62,15 @@ export class PacientesService {
     const paciente = await this.pacientesRepository.findOne({ where: { id } });
     if (!paciente) throw new NotFoundException(`Paciente con id ${id} no encontrado`);
     return paciente;
+  }
+
+  /**
+   * Retorna los pacientes cuyos IDs coinciden con los proporcionados.
+   * Endpoint interno para enriquecimiento por lotes desde gestion-administrativa.
+   */
+  async buscarPorIds(ids: number[]): Promise<Pacientes[]> {
+    if (!ids || ids.length === 0) return [];
+    return this.pacientesRepository.find({ where: { id: In(ids) } });
   }
 
   /**

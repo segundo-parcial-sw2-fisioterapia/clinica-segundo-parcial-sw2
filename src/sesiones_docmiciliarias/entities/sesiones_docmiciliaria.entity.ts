@@ -47,14 +47,6 @@ export class SesionesDomiciliarias {
   @Column({ type: 'text', nullable: true })
   correcciones_emitidas?: string;
 
-  @Field({ nullable: true })
-  @Column({ type: 'varchar', length: 500, nullable: true })
-  url_video?: string;
-
-  @Field()
-  @Column({ type: 'boolean', default: false })
-  analizado_por_ia: boolean;
-
   @Field(() => Date)
   @CreateDateColumn({ type: 'timestamp' })
   fecha_creacion: Date;

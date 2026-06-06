@@ -15,7 +15,6 @@ import { UsuariosModule } from './usuarios/usuarios.module';
 import { EjerciciosModule } from './ejercicios/ejercicios.module';
 import { SesionesDocmiciliariasModule } from './sesiones_docmiciliarias/sesiones_docmiciliarias.module';
 import { PlanesEjerciciosModule } from './planes_ejercicios/planes_ejercicios.module';
-import { CitasModule } from './citas/citas.module';
 import { EvaluacionesInnicialesModule } from './evaluaciones_inniciales/evaluaciones_inniciales.module';
 import { CompartidoModule } from './compartido/compartido.module';
 
@@ -67,7 +66,6 @@ import { CompartidoModule } from './compartido/compartido.module';
     EjerciciosModule,
     SesionesDocmiciliariasModule,
     PlanesEjerciciosModule,
-    CitasModule,
     EvaluacionesInnicialesModule,
     CompartidoModule,
   ],

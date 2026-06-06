@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { Personas } from './entities/persona.entity';
 import { CreatePersonaInput } from './dto/create-persona.input';
 import { UpdatePersonaInput } from './dto/update-persona.input';
@@ -11,6 +11,20 @@ export class PersonasService {
     @InjectRepository(Personas)
     private readonly personasRepository: Repository<Personas>,
   ) {}
+
+  /**
+   * Retorna una lista de personas cuyos IDs coinciden con los proporcionados.
+   * Usado para resolver consultas de enriquecimiento por lotes de otros microservicios.
+   *
+   * @param ids - Lista de IDs de personas.
+   * @returns Lista de personas encontradas.
+   */
+  async buscarPorIds(ids: number[]): Promise<Personas[]> {
+    if (!ids || ids.length === 0) return [];
+    return this.personasRepository.find({
+      where: { id: In(ids) },
+    });
+  }
 
   /**
    * Registra una nueva persona en el sistema.

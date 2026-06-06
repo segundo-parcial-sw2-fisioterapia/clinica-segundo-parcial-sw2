@@ -11,7 +11,7 @@ import {
   CategoriaSemaforo,
   CategoriaTrabajo,
   CategoriaEnfermedad,
-  FrecuenciaSesion,
+  NivelIntensidad,
 } from '../../compartido/enums';
 
 @ObjectType()
@@ -35,40 +35,37 @@ export class EvaluacionesIniciales {
   @Column({ type: 'timestamp' })
   fecha_evaluacion: Date;
 
-  @Field(() => CategoriaSemaforo)
-  @Column({ type: 'enum', enum: CategoriaSemaforo })
-  categoria_semaforo: CategoriaSemaforo;
+  @Field(() => CategoriaSemaforo, { nullable: true })
+  @Column({ type: 'enum', enum: CategoriaSemaforo, nullable: true })
+  categoria_semaforo?: CategoriaSemaforo;
+
+  /** Nullable para compatibilidad con evaluaciones pre-migración */
+  @Field(() => NivelIntensidad, { nullable: true })
+  @Column({ type: 'enum', enum: NivelIntensidad, nullable: true })
+  nivel?: NivelIntensidad;
 
   @Field({ nullable: true })
   @Column({ type: 'text', nullable: true })
   justificacion_semaforo?: string;
 
-  @Field(() => CategoriaTrabajo)
-  @Column({ type: 'enum', enum: CategoriaTrabajo })
-  categoria_trabajo: CategoriaTrabajo;
+  @Field(() => CategoriaTrabajo, { nullable: true })
+  @Column({ type: 'enum', enum: CategoriaTrabajo, nullable: true })
+  categoria_trabajo?: CategoriaTrabajo;
 
-  @Field(() => CategoriaEnfermedad)
-  @Column({ type: 'enum', enum: CategoriaEnfermedad })
-  categoria_enfermedad: CategoriaEnfermedad;
+  @Field(() => CategoriaEnfermedad, { nullable: true })
+  @Column({ type: 'enum', enum: CategoriaEnfermedad, nullable: true })
+  categoria_enfermedad?: CategoriaEnfermedad;
 
   @Field({ nullable: true })
   @Column({ type: 'text', nullable: true })
   descripcion_enfermedad?: string;
 
   /** Derivado de la categoría semáforo: rojo=120, amarillo=90, verde=45 */
-  @Field(() => Int)
-  @Column({ type: 'int' })
-  tiempo_sesion_minutos: number;
-
-  @Field(() => FrecuenciaSesion)
-  @Column({ type: 'enum', enum: FrecuenciaSesion })
-  frecuencia_sesion: FrecuenciaSesion;
+  @Field(() => Int, { nullable: true })
+  @Column({ type: 'int', nullable: true })
+  tiempo_sesion_minutos?: number;
 
   @Field({ nullable: true })
   @Column({ type: 'text', nullable: true })
   observaciones?: string;
-
-  @Field()
-  @Column({ type: 'boolean', default: true })
-  es_vigente: boolean;
 }
