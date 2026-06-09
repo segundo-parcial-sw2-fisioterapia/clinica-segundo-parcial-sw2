@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Sesiones } from './entities/sesione.entity';
@@ -7,6 +7,8 @@ import { CreateSesioneInput } from './dto/create-sesione.input';
 import { UpdateSesioneInput } from './dto/update-sesione.input';
 import { EstadoSesion } from '../compartido/enums';
 import { SesionesGateway } from './sesiones.gateway';
+import { BlockchainClientService } from '../blockchain/blockchain-client.service';
+import { BiClientService } from '../compartido/bi-client.service';
 
 const ESTADOS_SOLO_LECTURA = [
   EstadoSesion.CERRADA,
@@ -16,10 +18,14 @@ const ESTADOS_SOLO_LECTURA = [
 
 @Injectable()
 export class SesionesService {
+  private readonly logger = new Logger(SesionesService.name);
+
   constructor(
     @InjectRepository(Sesiones)
     private readonly sesionesRepository: Repository<Sesiones>,
     private readonly gateway: SesionesGateway,
+    private readonly blockchainClient: BlockchainClientService,
+    private readonly biClient: BiClientService,
   ) {}
 
   /**
@@ -237,7 +243,62 @@ export class SesionesService {
 
     const actualizada = await this.verSesion(id);
     this.gateway.emitirSesionCerrada(actualizada.id, actualizada.empleado_id ?? null);
+
+    // Cargar sesión con relaciones para Telemetría
+    const sesionCompleta = await this.sesionesRepository.findOne({
+      where: { id },
+      relations: {
+        plan_tratamiento: {
+          evaluacion_inicial: {
+            paciente: true,
+          },
+        },
+      },
+    });
+
+    if (sesionCompleta?.plan_tratamiento?.evaluacion_inicial) {
+      const evalInicial = sesionCompleta.plan_tratamiento.evaluacion_inicial;
+      this.biClient.emitirEvento({
+        tipo_evento: 'sesion_completada',
+        paciente_id: evalInicial.paciente?.id,
+        empleado_id: sesionCompleta.empleado_id,
+        categoria_semaforo: evalInicial.categoria_semaforo?.toLowerCase(),
+        categoria_trabajo: evalInicial.categoria_trabajo?.toLowerCase(),
+        categoria_enfermedad: evalInicial.categoria_enfermedad?.toLowerCase(),
+      }).catch(() => {});
+    }
+
+    // Fire-and-forget: no bloquea el retorno al cliente
+    this.registrarCierreEnBlockchain(actualizada).catch(() => {});
+
     return actualizada;
+  }
+
+  /**
+   * Serializa los datos clínicos de la sesión cerrada y los registra en Sepolia.
+   * Opera de forma asíncrona sin bloquear el cierre. Si blockchain no está disponible,
+   * la sesión queda cerrada igualmente (hash_blockchain permanece null).
+   */
+  private async registrarCierreEnBlockchain(sesion: Sesiones): Promise<void> {
+    const contenido = JSON.stringify({
+      sesionId: sesion.id,
+      numeroSesion: sesion.numero_sesion,
+      fechaHoraFin: sesion.fecha_hora_fin?.toISOString() ?? null,
+      observaciones: sesion.observaciones_clinicas ?? null,
+      nivelDolorInicio: sesion.nivel_dolor_reportado ?? null,
+      nivelDolorFin: sesion.nivel_dolor_post ?? null,
+      empleadoId: sesion.empleado_id ?? null,
+    });
+
+    const resultado = await this.blockchainClient.firmar(contenido, 'CLINICO');
+    if (resultado) {
+      await this.sesionesRepository.update(sesion.id, {
+        hash_blockchain: resultado.hash,
+      });
+      this.logger.log(
+        `Sesión ${sesion.id} registrada en Sepolia. hash=${resultado.hash} tx=${resultado.txHash}`,
+      );
+    }
   }
 
   /**

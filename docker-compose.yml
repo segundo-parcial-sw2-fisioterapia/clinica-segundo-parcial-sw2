@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  postgres-clinica:
+    image: postgres:15-alpine
+    container_name: postgres-clinica-sw2
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "12345"
+      POSTGRES_DB: p2_sw2_nest
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_clinica_data:/var/lib/postgresql/data
+
+  api-clinica:
+    build: .
+    container_name: api-clinica-sw2
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      # Sobreescribimos el DATABASE_HOST para que apunte al contenedor de la BD en lugar de localhost
+      - DATABASE_HOST=postgres-clinica
+    depends_on:
+      - postgres-clinica
+
+volumes:
+  postgres_clinica_data:

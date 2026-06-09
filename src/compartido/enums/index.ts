@@ -128,3 +128,11 @@ export enum EstadoSesion {
   FIRMADA = 'firmada',
 }
 registerEnumType(EstadoSesion, { name: 'EstadoSesion' });
+
+export enum EstadoEvaluacion {
+  PROGRAMADA = 'programada',
+  INICIADA = 'iniciada',
+  TERMINADA = 'terminada',
+  CANCELADA = 'cancelada',
+}
+registerEnumType(EstadoEvaluacion, { name: 'EstadoEvaluacion' });

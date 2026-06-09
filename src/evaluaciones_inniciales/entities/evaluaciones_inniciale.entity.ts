@@ -12,6 +12,7 @@ import {
   CategoriaTrabajo,
   CategoriaEnfermedad,
   NivelIntensidad,
+  EstadoEvaluacion,
 } from '../../compartido/enums';
 
 @ObjectType()
@@ -27,9 +28,17 @@ export class EvaluacionesIniciales {
   paciente: Pacientes;
 
   /** ID del empleado en el microservicio gestion-administrativa */
-  @Field(() => Int)
-  @Column({ type: 'int', name: 'empleado_id' })
-  empleado_id: number;
+  @Field(() => Int, { nullable: true })
+  @Column({ type: 'int', name: 'empleado_id', nullable: true })
+  empleado_id?: number;
+
+  @Field(() => EstadoEvaluacion)
+  @Column({
+    type: 'enum',
+    enum: EstadoEvaluacion,
+    default: EstadoEvaluacion.PROGRAMADA,
+  })
+  estado: EstadoEvaluacion;
 
   @Field(() => Date)
   @Column({ type: 'timestamp' })

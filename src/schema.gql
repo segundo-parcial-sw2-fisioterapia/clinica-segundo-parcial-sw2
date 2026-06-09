@@ -43,7 +43,8 @@ input CreateEvaluacionesInnicialeInput {
   categoria_semaforo: CategoriaSemaforo
   categoria_trabajo: CategoriaTrabajo
   descripcion_enfermedad: String
-  empleadoId: Int!
+  empleadoId: Int
+  estado: EstadoEvaluacion
   fecha_evaluacion: DateTime!
   justificacion_semaforo: String
   nivel: NivelIntensidad
@@ -138,6 +139,13 @@ type Ejercicios {
   url_video_referencia: String
 }
 
+enum EstadoEvaluacion {
+  CANCELADA
+  INICIADA
+  PROGRAMADA
+  TERMINADA
+}
+
 enum EstadoPaciente {
   ACTIVO
   ALTA_MEDICA
@@ -171,7 +179,8 @@ type EvaluacionesIniciales {
   categoria_semaforo: CategoriaSemaforo
   categoria_trabajo: CategoriaTrabajo
   descripcion_enfermedad: String
-  empleado_id: Int!
+  empleado_id: Int
+  estado: EstadoEvaluacion!
   fecha_evaluacion: DateTime!
   id: Int!
   justificacion_semaforo: String
@@ -512,6 +521,8 @@ input UpdateEvaluacionesInnicialeInput {
   categoria_semaforo: CategoriaSemaforo
   categoria_trabajo: CategoriaTrabajo
   descripcion_enfermedad: String
+  empleadoId: Int
+  estado: EstadoEvaluacion
   fecha_evaluacion: DateTime
   id: Int!
   justificacion_semaforo: String

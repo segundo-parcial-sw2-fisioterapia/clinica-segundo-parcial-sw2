@@ -5,7 +5,8 @@ import { EvaluacionesIniciales } from './entities/evaluaciones_inniciale.entity'
 import { Pacientes } from '../pacientes/entities/paciente.entity';
 import { CreateEvaluacionesInnicialeInput } from './dto/create-evaluaciones_inniciale.input';
 import { UpdateEvaluacionesInnicialeInput } from './dto/update-evaluaciones_inniciale.input';
-import { CategoriaSemaforo } from '../compartido/enums';
+import { CategoriaSemaforo, EstadoEvaluacion } from '../compartido/enums';
+import { BiClientService } from '../compartido/bi-client.service';
 
 /** Minutos de sesión por categoría semáforo según protocolo clínico */
 const TIEMPO_POR_SEMAFORO: Record<CategoriaSemaforo, number> = {
@@ -23,6 +24,7 @@ export class EvaluacionesInnicialesService {
     private readonly evaluacionesRepository: Repository<EvaluacionesIniciales>,
     @InjectRepository(Pacientes)
     private readonly pacientesRepository: Repository<Pacientes>,
+    private readonly biClient: BiClientService,
   ) {}
 
   /**
@@ -42,6 +44,7 @@ export class EvaluacionesInnicialesService {
     const evaluacion = this.evaluacionesRepository.create({
       paciente: { id: datos.pacienteId } as Pacientes,
       empleado_id: datos.empleadoId,
+      estado: datos.estado,
       fecha_evaluacion: datos.fecha_evaluacion,
       categoria_semaforo: datos.categoria_semaforo,
       nivel: datos.nivel,
@@ -52,7 +55,12 @@ export class EvaluacionesInnicialesService {
       tiempo_sesion_minutos,
       observaciones: datos.observaciones,
     });
-    return this.evaluacionesRepository.save(evaluacion);
+    
+    const guardada = await this.evaluacionesRepository.save(evaluacion);
+    
+    // El evento evaluacion_creada se dispara en editarEvaluacionInicial al pasar a estado TERMINADA
+
+    return guardada;
   }
 
   private async obtenerEmpleadoIdPorPersonaId(personaId: number): Promise<number | null> {
@@ -193,16 +201,36 @@ export class EvaluacionesInnicialesService {
   async editarEvaluacionInicial(
     datos: UpdateEvaluacionesInnicialeInput,
   ): Promise<EvaluacionesIniciales> {
-    const { id, ...campos } = datos;
+    const { id, empleadoId, ...campos } = datos as any;
     await this.verEvaluacionInicial(id);
 
+    if (empleadoId !== undefined) {
+      campos.empleado_id = empleadoId;
+    }
+
     if (campos.categoria_semaforo) {
-      (campos as any).tiempo_sesion_minutos =
-        TIEMPO_POR_SEMAFORO[campos.categoria_semaforo];
+      campos.tiempo_sesion_minutos =
+        TIEMPO_POR_SEMAFORO[campos.categoria_semaforo as CategoriaSemaforo];
     }
 
     await this.evaluacionesRepository.update(id, campos);
-    return this.verEvaluacionInicial(id);
+    const actualizada = await this.evaluacionesRepository.findOne({
+      where: { id },
+      relations: { paciente: true },
+    });
+
+    if (actualizada && actualizada.estado === EstadoEvaluacion.TERMINADA) {
+      this.biClient.emitirEvento({
+        tipo_evento: 'evaluacion_creada',
+        paciente_id: actualizada.paciente?.id,
+        empleado_id: actualizada.empleado_id ?? undefined,
+        categoria_semaforo: actualizada.categoria_semaforo?.toLowerCase() ?? undefined,
+        categoria_trabajo: actualizada.categoria_trabajo?.toLowerCase() ?? undefined,
+        categoria_enfermedad: actualizada.categoria_enfermedad?.toLowerCase() ?? undefined,
+      }).catch(() => {});
+    }
+
+    return actualizada!;
   }
 
   /**

@@ -11,6 +11,7 @@ import {
   CategoriaTrabajo,
   CategoriaEnfermedad,
   NivelIntensidad,
+  EstadoEvaluacion,
 } from '../../compartido/enums';
 
 @InputType()
@@ -19,9 +20,15 @@ export class CreateEvaluacionesInnicialeInput {
   @IsInt()
   pacienteId: number;
 
-  @Field(() => Int)
+  @Field(() => Int, { nullable: true })
+  @IsOptional()
   @IsInt()
-  empleadoId: number;
+  empleadoId?: number;
+
+  @Field(() => EstadoEvaluacion, { nullable: true })
+  @IsOptional()
+  @IsEnum(EstadoEvaluacion)
+  estado?: EstadoEvaluacion;
 
   @Field()
   @IsNotEmpty()

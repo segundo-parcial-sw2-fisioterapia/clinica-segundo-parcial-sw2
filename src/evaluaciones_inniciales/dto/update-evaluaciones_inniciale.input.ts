@@ -4,7 +4,7 @@ import { CreateEvaluacionesInnicialeInput } from './create-evaluaciones_innicial
 
 @InputType()
 export class UpdateEvaluacionesInnicialeInput extends PartialType(
-  OmitType(CreateEvaluacionesInnicialeInput, ['pacienteId', 'empleadoId'] as const),
+  OmitType(CreateEvaluacionesInnicialeInput, ['pacienteId'] as const),
 ) {
   @Field(() => Int)
   @IsInt()
