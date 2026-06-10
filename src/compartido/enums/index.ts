@@ -25,6 +25,7 @@ export enum SexoPaciente {
 registerEnumType(SexoPaciente, { name: 'SexoPaciente' });
 
 export enum EstadoPaciente {
+  PROSPECTO = 'prospecto',
   ACTIVO = 'activo',
   INACTIVO = 'inactivo',
   ALTA_MEDICA = 'alta_medica',
@@ -111,9 +112,27 @@ export enum EstadoCita {
 }
 registerEnumType(EstadoCita, { name: 'EstadoCita' });
 
+export enum NivelIntensidad {
+  BAJO = 'bajo',
+  MEDIO = 'medio',
+  ALTO = 'alto',
+}
+registerEnumType(NivelIntensidad, { name: 'NivelIntensidad' });
+
 export enum EstadoSesion {
+  PROGRAMADA = 'programada',
+  HABILITADA = 'habilitada',
   ABIERTA = 'abierta',
   CERRADA = 'cerrada',
+  CANCELADA = 'cancelada',
   FIRMADA = 'firmada',
 }
 registerEnumType(EstadoSesion, { name: 'EstadoSesion' });
+
+export enum EstadoEvaluacion {
+  PROGRAMADA = 'programada',
+  INICIADA = 'iniciada',
+  TERMINADA = 'terminada',
+  CANCELADA = 'cancelada',
+}
+registerEnumType(EstadoEvaluacion, { name: 'EstadoEvaluacion' });

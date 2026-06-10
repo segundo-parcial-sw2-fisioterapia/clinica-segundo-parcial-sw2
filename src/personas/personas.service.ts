@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { Personas } from './entities/persona.entity';
 import { CreatePersonaInput } from './dto/create-persona.input';
 import { UpdatePersonaInput } from './dto/update-persona.input';
@@ -13,12 +13,36 @@ export class PersonasService {
   ) {}
 
   /**
+   * Retorna una lista de personas cuyos IDs coinciden con los proporcionados.
+   * Usado para resolver consultas de enriquecimiento por lotes de otros microservicios.
+   *
+   * @param ids - Lista de IDs de personas.
+   * @returns Lista de personas encontradas.
+   */
+  async buscarPorIds(ids: number[]): Promise<Personas[]> {
+    if (!ids || ids.length === 0) return [];
+    return this.personasRepository.find({
+      where: { id: In(ids) },
+    });
+  }
+
+  /**
    * Registra una nueva persona en el sistema.
    *
    * @param datos - Datos de la persona a registrar.
    * @returns La persona creada.
    */
   async crearPersonas(datos: CreatePersonaInput): Promise<Personas> {
+    // Validar unicidad del CI
+    const personaExistente = await this.personasRepository.findOne({
+      where: { ci: datos.ci },
+    });
+    if (personaExistente) {
+      throw new ConflictException(
+        `Ya existe una persona registrada con la Cédula de Identidad (CI) "${datos.ci}".`,
+      );
+    }
+
     const persona = this.personasRepository.create(datos);
     return this.personasRepository.save(persona);
   }
@@ -69,6 +93,18 @@ export class PersonasService {
   async editarPersona(datos: UpdatePersonaInput): Promise<Personas> {
     const { id, ...campos } = datos;
     await this.verPersona(id);
+
+    if (campos.ci) {
+      const personaConMismoCi = await this.personasRepository.findOne({
+        where: { ci: campos.ci },
+      });
+      if (personaConMismoCi && personaConMismoCi.id !== id) {
+        throw new ConflictException(
+          `No se puede actualizar. Ya existe otro registro con la Cédula de Identidad (CI) "${campos.ci}".`,
+        );
+      }
+    }
+
     await this.personasRepository.update(id, campos);
     return this.verPersona(id);
   }

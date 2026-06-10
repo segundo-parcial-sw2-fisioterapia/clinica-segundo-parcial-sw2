@@ -6,7 +6,6 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Pacientes } from '../../pacientes/entities/paciente.entity';
 import { EvaluacionesIniciales } from '../../evaluaciones_inniciales/entities/evaluaciones_inniciale.entity';
 import { EstadoPlanTratamiento } from '../../compartido/enums';
 
@@ -17,28 +16,14 @@ export class PlanesTratamientos {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Field(() => Pacientes)
-  @ManyToOne(() => Pacientes, { nullable: false, eager: true })
-  @JoinColumn({ name: 'paciente_id' })
-  paciente: Pacientes;
-
-  @Field(() => EvaluacionesIniciales, { nullable: true })
-  @ManyToOne(() => EvaluacionesIniciales, { nullable: true, eager: true })
+  @Field(() => EvaluacionesIniciales)
+  @ManyToOne(() => EvaluacionesIniciales, { nullable: false, eager: true })
   @JoinColumn({ name: 'evaluacion_inicial_id' })
-  evaluacion_inicial?: EvaluacionesIniciales;
-
-  /** ID del profesional que diseñó el plan (gestion-administrativa) */
-  @Field(() => Int)
-  @Column({ type: 'int', name: 'empleado_id' })
-  empleado_id: number;
+  evaluacion_inicial: EvaluacionesIniciales;
 
   @Field()
   @Column({ type: 'date' })
   fecha_inicio: string;
-
-  @Field({ nullable: true })
-  @Column({ type: 'date', nullable: true })
-  fecha_fin_estimada?: string;
 
   @Field({ nullable: true })
   @Column({ type: 'text', nullable: true })
@@ -55,4 +40,18 @@ export class PlanesTratamientos {
   @Field({ nullable: true })
   @Column({ type: 'text', nullable: true })
   observaciones?: string;
+
+  @Field(() => Int)
+  @Column({ type: 'int', default: 1 })
+  duracion_meses_estimada: number;
+
+  @Field(() => Int)
+  @Column({ type: 'int', default: 1 })
+  numero_sesiones_mes: number;
+
+  /** Referencia a la tarifa en gestion-administrativa (sin FK directa entre microservicios) */
+  @Field(() => Int, { nullable: true })
+  @Column({ type: 'int', name: 'tarifa_id', nullable: true })
+  tarifa_id?: number;
 }
+

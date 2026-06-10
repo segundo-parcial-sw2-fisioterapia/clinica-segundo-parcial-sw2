@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { WsAdapter } from '@nestjs/platform-ws';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -29,6 +30,9 @@ async function bootstrap() {
     origin: '*',
     credentials: true,
   });
+
+  // Adaptador WebSocket nativo (ws) para el gateway de sesiones
+  app.useWebSocketAdapter(new WsAdapter(app));
 
   await app.listen(port);
   logger.log(

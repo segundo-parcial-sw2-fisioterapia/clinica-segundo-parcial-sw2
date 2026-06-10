@@ -26,4 +26,10 @@ export class CreatePersonaInput {
   @IsString()
   @MaxLength(20)
   telefono?: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  @MaxLength(150)
+  email?: string;
 }

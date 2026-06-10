@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { Pacientes } from './entities/paciente.entity';
 import { Personas } from '../personas/entities/persona.entity';
 import { CreatePacienteInput } from './dto/create-paciente.input';
@@ -21,6 +21,16 @@ export class PacientesService {
    * @returns El paciente creado con su persona.
    */
   async crearPacientes(datos: CreatePacienteInput): Promise<Pacientes> {
+    // Validar si la persona ya tiene un perfil de paciente
+    const pacienteExistente = await this.pacientesRepository.findOne({
+      where: { persona: { id: datos.personaId } },
+    });
+    if (pacienteExistente) {
+      throw new ConflictException(
+        `Esta persona (ID: ${datos.personaId}) ya tiene un perfil de paciente registrado.`,
+      );
+    }
+
     const paciente = this.pacientesRepository.create({
       fecha_nacimiento: datos.fecha_nacimiento,
       direccion: datos.direccion,
@@ -28,7 +38,8 @@ export class PacientesService {
       estado: datos.estado ?? EstadoPaciente.ACTIVO,
       persona: { id: datos.personaId } as Personas,
     });
-    return this.pacientesRepository.save(paciente);
+    const guardado = await this.pacientesRepository.save(paciente);
+    return this.verPaciente(guardado.id);
   }
 
   /**
@@ -51,6 +62,15 @@ export class PacientesService {
     const paciente = await this.pacientesRepository.findOne({ where: { id } });
     if (!paciente) throw new NotFoundException(`Paciente con id ${id} no encontrado`);
     return paciente;
+  }
+
+  /**
+   * Retorna los pacientes cuyos IDs coinciden con los proporcionados.
+   * Endpoint interno para enriquecimiento por lotes desde gestion-administrativa.
+   */
+  async buscarPorIds(ids: number[]): Promise<Pacientes[]> {
+    if (!ids || ids.length === 0) return [];
+    return this.pacientesRepository.find({ where: { id: In(ids) } });
   }
 
   /**

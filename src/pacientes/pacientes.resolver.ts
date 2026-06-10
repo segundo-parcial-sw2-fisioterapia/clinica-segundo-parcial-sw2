@@ -27,6 +27,13 @@ export class PacientesResolver {
     return this.pacientesService.verPaciente(id);
   }
 
+  @Query(() => [Pacientes], { name: 'pacientesPorIds', description: 'Busca múltiples pacientes por sus IDs — endpoint interno para microservicios' })
+  pacientesPorIds(
+    @Args('ids', { type: () => [Int] }) ids: number[],
+  ): Promise<Pacientes[]> {
+    return this.pacientesService.buscarPorIds(ids);
+  }
+
   @Query(() => [Pacientes], { name: 'buscarPacientes', description: 'Busca pacientes por nombre, CI o teléfono' })
   buscarPacientes(
     @Args('termino') termino: string,

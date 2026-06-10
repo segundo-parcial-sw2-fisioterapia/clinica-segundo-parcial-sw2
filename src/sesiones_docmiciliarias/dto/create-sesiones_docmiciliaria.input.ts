@@ -1,6 +1,5 @@
 import { InputType, Field, Int } from '@nestjs/graphql';
 import {
-  IsBoolean,
   IsInt,
   IsNotEmpty,
   IsOptional,
@@ -46,14 +45,4 @@ export class CreateSesionesDocmiciliariaInput {
   @IsOptional()
   @IsString()
   correcciones_emitidas?: string;
-
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsString()
-  url_video?: string;
-
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsBoolean()
-  analizado_por_ia?: boolean;
 }

@@ -12,22 +12,31 @@ import { EstadoSesion } from '../../compartido/enums';
 
 @InputType()
 export class CreateSesioneInput {
+  @Field(() => Int)
+  @IsInt()
+  planTratamientoId: number;
+
   @Field(() => Int, { nullable: true })
   @IsOptional()
   @IsInt()
-  citaId?: number;
+  mensualidadId?: number;
 
   @Field(() => Int)
   @IsInt()
-  pacienteId: number;
+  numeroSesion: number;
 
-  @Field(() => Int)
+  @Field(() => Int, { nullable: true })
+  @IsOptional()
   @IsInt()
-  empleadoId: number;
+  empleadoId?: number;
 
   @Field()
   @IsNotEmpty()
-  fecha_hora_inicio: Date;
+  fechaHoraProgramada: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  fecha_hora_inicio?: Date;
 
   @Field({ nullable: true })
   @IsOptional()

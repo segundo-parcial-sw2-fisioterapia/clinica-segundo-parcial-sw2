@@ -12,26 +12,12 @@ import { EstadoPlanTratamiento } from '../../compartido/enums';
 export class CreatePlanesTratamientoInput {
   @Field(() => Int)
   @IsInt()
-  pacienteId: number;
-
-  @Field(() => Int, { nullable: true })
-  @IsOptional()
-  @IsInt()
-  evaluacionInicialId?: number;
-
-  @Field(() => Int)
-  @IsInt()
-  empleadoId: number;
+  evaluacionInicialId: number;
 
   @Field()
   @IsNotEmpty()
   @IsString()
   fecha_inicio: string;
-
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsString()
-  fecha_fin_estimada?: string;
 
   @Field({ nullable: true })
   @IsOptional()
@@ -47,4 +33,18 @@ export class CreatePlanesTratamientoInput {
   @IsOptional()
   @IsString()
   observaciones?: string;
+
+  @Field(() => Int)
+  @IsInt()
+  duracionMesesEstimada: number;
+
+  @Field(() => Int)
+  @IsInt()
+  numeroSesionesMes: number;
+
+  /** ID de la tarifa del catálogo en gestion-administrativa */
+  @Field(() => Int)
+  @IsInt()
+  tarifaId: number;
 }
+

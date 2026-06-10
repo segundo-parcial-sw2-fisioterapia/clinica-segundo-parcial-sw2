@@ -32,8 +32,6 @@ export class SesionesDocmiciliariasService {
       puntuacion: datos.puntuacion,
       xp_ganado: datos.xp_ganado,
       correcciones_emitidas: datos.correcciones_emitidas,
-      url_video: datos.url_video,
-      analizado_por_ia: datos.analizado_por_ia ?? false,
     });
     return this.sesionesDomiciliariasRepository.save(sesion);
   }
