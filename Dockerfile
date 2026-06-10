@@ -6,6 +6,9 @@ WORKDIR /app
 # Habilitar pnpm
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
+# Configuración de red para evitar timeouts en conexiones lentas
+RUN pnpm config set fetch-retries 5 && pnpm config set fetch-timeout 600000
+
 # Instalar dependencias ignorando scripts postinstall (soluciona ERR_PNPM_IGNORED_BUILDS en v9)
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile --ignore-scripts
@@ -21,6 +24,9 @@ WORKDIR /app
 
 # Habilitar pnpm
 RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Configuración de red para evitar timeouts
+RUN pnpm config set fetch-retries 5 && pnpm config set fetch-timeout 600000
 
 # Instalar solo dependencias de producción
 COPY package.json pnpm-lock.yaml ./
