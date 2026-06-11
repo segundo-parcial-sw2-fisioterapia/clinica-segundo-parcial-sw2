@@ -27,6 +27,13 @@ export class PlanesEjerciciosResolver {
     return this.service.listarEjerciciosDePlan(planTratamientoId);
   }
 
+  @Query(() => [PlanesEjercicios], { name: 'listarPlanesEjerciciosPorPaciente', description: 'Retorna los ejercicios asignados a todos los planes de un paciente' })
+  listarPlanesEjerciciosPorPaciente(
+    @Args('pacienteId', { type: () => Int }) pacienteId: number,
+  ): Promise<PlanesEjercicios[]> {
+    return this.service.listarPlanesEjerciciosPorPaciente(pacienteId);
+  }
+
   @Query(() => PlanesEjercicios, { name: 'verPlanEjercicio', description: 'Busca los parámetros de un ejercicio en un plan por su ID' })
   verPlanEjercicio(
     @Args('id', { type: () => Int }) id: number,

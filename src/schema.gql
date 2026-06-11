@@ -394,6 +394,9 @@ type Query {
   """Retorna todos los ejercicios asignados a planes"""
   listarPlanesEjercicios: [PlanesEjercicios!]!
 
+  """Retorna los ejercicios asignados a todos los planes de un paciente"""
+  listarPlanesEjerciciosPorPaciente(pacienteId: Int!): [PlanesEjercicios!]!
+
   """Retorna los planes de tratamiento de un paciente"""
   listarPlanesPorPaciente(pacienteId: Int!): [PlanesTratamientos!]!
 
