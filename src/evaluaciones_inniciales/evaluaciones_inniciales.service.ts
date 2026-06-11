@@ -15,7 +15,7 @@ const TIEMPO_POR_SEMAFORO: Record<CategoriaSemaforo, number> = {
   [CategoriaSemaforo.VERDE]: 45,
 };
 
-const ROLES_ACCESO_TOTAL = ['administrador', 'director', 'recepcionista'];
+const ROLES_ACCESO_TOTAL = ['administrador', 'director', 'recepcionista', 'fisioterapeuta'];
 
 @Injectable()
 export class EvaluacionesInnicialesService {
