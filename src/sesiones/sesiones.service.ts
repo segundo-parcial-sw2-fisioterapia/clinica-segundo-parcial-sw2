@@ -77,10 +77,13 @@ export class SesionesService {
    * sesion → plan_tratamiento → evaluacion_inicial → paciente.
    */
   async listarSesionesPorPaciente(pacienteId: number): Promise<Sesiones[]> {
-    return this.sesionesRepository.find({
-      where: { plan_tratamiento: { evaluacion_inicial: { paciente: { id: pacienteId } } } },
-      order: { fecha_hora_programada: 'ASC' },
-    });
+    return this.sesionesRepository.createQueryBuilder('sesion')
+      .leftJoinAndSelect('sesion.plan_tratamiento', 'plan_tratamiento')
+      .leftJoinAndSelect('plan_tratamiento.evaluacion_inicial', 'evaluacion_inicial')
+      .leftJoinAndSelect('evaluacion_inicial.paciente', 'paciente')
+      .where('paciente.id = :pacienteId', { pacienteId })
+      .orderBy('sesion.fecha_hora_programada', 'ASC')
+      .getMany();
   }
 
   /**

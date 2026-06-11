@@ -58,6 +58,23 @@ export class PlanesEjerciciosService {
   }
 
   /**
+   * Retorna los ejercicios asignados a todos los planes de un paciente.
+   *
+   * @param pacienteId - ID del paciente.
+   * @returns Lista de planes de ejercicio del paciente indicado.
+   */
+  async listarPlanesEjerciciosPorPaciente(pacienteId: number): Promise<PlanesEjercicios[]> {
+    return this.planesEjerciciosRepository.createQueryBuilder('plan_ejercicio')
+      .leftJoinAndSelect('plan_ejercicio.plan_tratamiento', 'plan_tratamiento')
+      .leftJoinAndSelect('plan_ejercicio.ejercicio', 'ejercicio')
+      .leftJoinAndSelect('plan_tratamiento.evaluacion_inicial', 'evaluacion_inicial')
+      .leftJoinAndSelect('evaluacion_inicial.paciente', 'paciente')
+      .where('paciente.id = :pacienteId', { pacienteId })
+      .orderBy('plan_ejercicio.orden', 'ASC')
+      .getMany();
+  }
+
+  /**
    * Busca un plan-ejercicio por su identificador único.
    *
    * @param id - ID del plan-ejercicio.
