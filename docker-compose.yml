@@ -25,6 +25,7 @@ services:
       - DATABASE_HOST=postgres-clinica
       - N8N_API_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0Zjg2NGE3ZC0xMzI2LTQ4N2EtYjgyNy05N2Q0ZTZlNzZiZDAiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwianRpIjoiZTNjNmU5YjEtZGIzMi00ZDkxLWFmNmMtYzAyZDE5MDYwNWY0IiwiaWF0IjoxNzgxMTIzMDEwLCJleHAiOjE3ODYyNDgwMDB9.kkUa4fE3TdoDV4CpbxnO39y5on2Yptzn64wjYIm5z-I
       - GESTION_ADMINISTRATIVA_URL=http://52.180.69.59:3001/graphql
+      - BI_AUTOMATIZACION_URL=http://157.230.93.30:8005/api
     depends_on:
       - postgres-clinica
 
